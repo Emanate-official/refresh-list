@@ -12,6 +12,7 @@ class RefreshList extends StatefulWidget {
     Key? key,
     this.refreshColor = Colors.white,
     this.refreshBackground = Colors.black87,
+    this.physics = const BouncingScrollPhysics(),
   }) : super(key: key);
 
   final Widget Function(int) builder;
@@ -21,6 +22,7 @@ class RefreshList extends StatefulWidget {
   final FutureFunction onRefresh;
   final Color refreshColor;
   final Color refreshBackground;
+  final ScrollPhysics physics;
 
   @override
   _RefreshListState createState() => _RefreshListState();
@@ -97,7 +99,7 @@ class _RefreshListState extends State<RefreshList> {
                     child: ListView.builder(
                       padding: EdgeInsets.zero,
                       controller: _controller,
-                      physics: const BouncingScrollPhysics(),
+                      physics: widget.physics,
                       itemCount: widget.length + 1,
                       itemBuilder: (BuildContext context, int index) {
                         if (index == widget.length) {
