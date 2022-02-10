@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 class SliverLoadingList extends StatefulWidget {
   const SliverLoadingList({
     required this.builder,
+    required this.controller,
     required this.length,
     required this.loadingIndicator,
     required this.onLoad,
@@ -17,6 +18,7 @@ class SliverLoadingList extends StatefulWidget {
   }) : super(key: key);
 
   final Widget Function(int) builder;
+  final ScrollController controller;
   final int length;
   final SizedBox loadingIndicator;
   final double loadingIndicatorOffset;
@@ -31,7 +33,7 @@ class SliverLoadingList extends StatefulWidget {
 }
 
 class _SliverLoadingListState extends State<SliverLoadingList> {
-  final ScrollController _controller = ScrollController();
+  late ScrollController _controller;
 
   bool isLoading = false;
   double position = 0;
@@ -39,6 +41,8 @@ class _SliverLoadingListState extends State<SliverLoadingList> {
   @override
   void initState() {
     position = widget.loadingIndicator.height!;
+
+    _controller = widget.controller;
     _controller.addListener(scrollHandler);
 
     super.initState();
@@ -93,41 +97,35 @@ class _SliverLoadingListState extends State<SliverLoadingList> {
                 color: widget.refreshColor,
                 backgroundColor: widget.refreshBackground,
                 onRefresh: widget.onRefresh,
-                child: RawScrollbar(
+                child: CustomScrollView(
+                  physics: widget.length > 0
+                      ? const BouncingScrollPhysics()
+                      : const NeverScrollableScrollPhysics(),
                   controller: _controller,
-                  radius: const Radius.circular(20),
-                  timeToFade: const Duration(milliseconds: 100),
-                  mainAxisMargin: -40,
-                  child: CustomScrollView(
-                    physics: widget.length > 0
-                        ? const BouncingScrollPhysics()
-                        : const NeverScrollableScrollPhysics(),
-                    controller: _controller,
-                    slivers: [
-                      ...widget.sliverBars,
-                      // Display the list items if list has length
-                      if (widget.length > 0)
-                        ...List.generate(
-                          widget.length,
-                          (index) => widget.builder(index),
-                        ),
-                      // Display loading indicators if list is empty
-                      if (widget.length <= 0)
-                        ...List.generate(
-                          (constraints.maxHeight ~/
-                                  widget.loadingIndicator.height!) +
-                              1,
-                          (index) => SliverToBoxAdapter(
-                            child: widget.loadingIndicator,
-                          ),
-                        ),
-                      // Add loading indicator to bottom of list if loading
-                      if (isLoading)
-                        SliverToBoxAdapter(
+                  slivers: [
+                    ...widget.sliverBars,
+                    // Display the list items if list has length
+                    if (widget.length > 0)
+                      ...List.generate(
+                        widget.length,
+                        (index) => widget.builder(index),
+                      ),
+                    // Display loading indicators if list is empty
+                    if (widget.length <= 0)
+                      ...List.generate(
+                        (constraints.maxHeight ~/
+                                widget.loadingIndicator.height!) +
+                            1,
+                        (index) => SliverToBoxAdapter(
                           child: widget.loadingIndicator,
                         ),
-                    ],
-                  ),
+                      ),
+                    // Add loading indicator to bottom of list if loading
+                    if (isLoading)
+                      SliverToBoxAdapter(
+                        child: widget.loadingIndicator,
+                      ),
+                  ],
                 ),
               ),
               if (!isLoading && position < widget.loadingIndicator.height!)
