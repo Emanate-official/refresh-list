@@ -1,7 +1,6 @@
 library refresh_list;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 
 class SliverLoadingList extends StatefulWidget {
   const SliverLoadingList({
