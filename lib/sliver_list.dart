@@ -1,11 +1,11 @@
 library refresh_list;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 
 class SliverLoadingList extends StatefulWidget {
   const SliverLoadingList({
     required this.builder,
-    required this.controller,
     required this.length,
     required this.loadingIndicator,
     required this.onLoad,
@@ -18,7 +18,6 @@ class SliverLoadingList extends StatefulWidget {
   }) : super(key: key);
 
   final Widget Function(int) builder;
-  final ScrollController controller;
   final int length;
   final SizedBox loadingIndicator;
   final double loadingIndicatorOffset;
@@ -33,7 +32,7 @@ class SliverLoadingList extends StatefulWidget {
 }
 
 class _SliverLoadingListState extends State<SliverLoadingList> {
-  late ScrollController _controller;
+  ScrollController? innerScrollController;
 
   bool isLoading = false;
   double position = 0;
@@ -41,16 +40,13 @@ class _SliverLoadingListState extends State<SliverLoadingList> {
   @override
   void initState() {
     position = widget.loadingIndicator.height!;
-
-    _controller = widget.controller;
-    _controller.addListener(scrollHandler);
-
     super.initState();
   }
 
-  void scrollHandler() {
-    if (_controller.hasClients) {
-      double diff = _controller.offset - _controller.position.maxScrollExtent;
+  void innerScrollHandler() {
+    if (innerScrollController?.hasClients ?? false) {
+      double diff = innerScrollController!.offset -
+          innerScrollController!.position.maxScrollExtent;
 
       if (diff > 0 && !isLoading) {
         setState(() => position = widget.loadingIndicator.height! - diff);
@@ -74,8 +70,8 @@ class _SliverLoadingListState extends State<SliverLoadingList> {
 
   @override
   void dispose() {
-    _controller.removeListener(scrollHandler);
-    _controller.dispose();
+    innerScrollController!.removeListener(innerScrollHandler);
+    innerScrollController!.dispose();
 
     super.dispose();
   }
@@ -92,40 +88,58 @@ class _SliverLoadingListState extends State<SliverLoadingList> {
           },
           child: Stack(
             children: <Widget>[
-              RefreshIndicator(
-                edgeOffset: widget.loadingIndicatorOffset,
-                color: widget.refreshColor,
-                backgroundColor: widget.refreshBackground,
-                onRefresh: widget.onRefresh,
-                child: CustomScrollView(
-                  physics: widget.length > 0
-                      ? const BouncingScrollPhysics()
-                      : const NeverScrollableScrollPhysics(),
-                  controller: _controller,
-                  slivers: [
+              NestedScrollView(
+                headerSliverBuilder: (
+                  BuildContext context,
+                  bool innerBoxIsScrolled,
+                ) {
+                  return <Widget>[
                     ...widget.sliverBars,
-                    // Display the list items if list has length
-                    if (widget.length > 0)
-                      ...List.generate(
-                        widget.length,
-                        (index) => widget.builder(index),
-                      ),
-                    // Display loading indicators if list is empty
-                    if (widget.length <= 0)
-                      ...List.generate(
-                        (constraints.maxHeight ~/
-                                widget.loadingIndicator.height!) +
-                            1,
-                        (index) => SliverToBoxAdapter(
-                          child: widget.loadingIndicator,
+                  ];
+                },
+                body: Builder(
+                  builder: (BuildContext context) {
+                    innerScrollController = PrimaryScrollController.of(context);
+                    innerScrollController!.addListener(innerScrollHandler);
+
+                    return LayoutBuilder(builder: (context, constraints) {
+                      final int loadingCount = _calculateSkeletonCount(
+                        constraints,
+                        widget.loadingIndicator.height ?? 0,
+                      );
+
+                      return RefreshIndicator(
+                        edgeOffset: widget.loadingIndicatorOffset,
+                        color: widget.refreshColor,
+                        backgroundColor: widget.refreshBackground,
+                        onRefresh: widget.onRefresh,
+                        child: ListView.builder(
+                          primary: widget.length > 0,
+                          physics: widget.length > 0
+                              ? const BouncingScrollPhysics()
+                              : const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(0),
+                          itemCount: widget.length > 0
+                              ? widget.length + 1
+                              : loadingCount,
+                          itemBuilder: (BuildContext context, int index) {
+                            if (index == widget.length) {
+                              return Visibility(
+                                visible: isLoading,
+                                child: widget.loadingIndicator,
+                              );
+                            } else {
+                              if (widget.length > 0) {
+                                return widget.builder(index);
+                              } else {
+                                return widget.loadingIndicator;
+                              }
+                            }
+                          },
                         ),
-                      ),
-                    // Add loading indicator to bottom of list if loading
-                    if (isLoading)
-                      SliverToBoxAdapter(
-                        child: widget.loadingIndicator,
-                      ),
-                  ],
+                      );
+                    });
+                  },
                 ),
               ),
               if (!isLoading && position < widget.loadingIndicator.height!)
@@ -140,6 +154,13 @@ class _SliverLoadingListState extends State<SliverLoadingList> {
       },
     );
   }
+}
+
+int _calculateSkeletonCount(
+  BoxConstraints constraints,
+  double indicatorHeight,
+) {
+  return (constraints.maxHeight ~/ indicatorHeight) + 1;
 }
 
 typedef FutureFunction = Future<void> Function();
