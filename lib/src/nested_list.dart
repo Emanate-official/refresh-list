@@ -101,43 +101,41 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
                     innerScrollController = PrimaryScrollController.of(context);
                     innerScrollController!.addListener(innerScrollHandler);
 
-                    return LayoutBuilder(builder: (context, constraints) {
-                      final int loadingCount = _calculateSkeletonCount(
-                        constraints,
-                        widget.loadingIndicator.height ?? 0,
-                      );
+                    final int loadingCount = _calculateSkeletonCount(
+                      constraints,
+                      widget.loadingIndicator.height ?? 0,
+                    );
 
-                      return RefreshIndicator(
-                        edgeOffset: widget.loadingIndicatorOffset,
-                        color: widget.refreshColor,
-                        backgroundColor: widget.refreshBackground,
-                        onRefresh: widget.onRefresh,
-                        child: ListView.builder(
-                          primary: widget.length > 0,
-                          physics: widget.length > 0
-                              ? const BouncingScrollPhysics()
-                              : const NeverScrollableScrollPhysics(),
-                          padding: const EdgeInsets.all(0),
-                          itemCount: widget.length > 0
-                              ? widget.length + 1
-                              : loadingCount,
-                          itemBuilder: (BuildContext context, int index) {
-                            if (index == widget.length) {
-                              return Visibility(
-                                visible: isLoading,
-                                child: widget.loadingIndicator,
-                              );
+                    return RefreshIndicator(
+                      edgeOffset: widget.loadingIndicatorOffset,
+                      color: widget.refreshColor,
+                      backgroundColor: widget.refreshBackground,
+                      onRefresh: widget.onRefresh,
+                      child: ListView.builder(
+                        primary: widget.length > 0,
+                        physics: widget.length > 0
+                            ? const BouncingScrollPhysics()
+                            : const NeverScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(0),
+                        itemCount: widget.length > 0
+                            ? widget.length + 1
+                            : loadingCount,
+                        itemBuilder: (BuildContext context, int index) {
+                          if (index == widget.length) {
+                            return Visibility(
+                              visible: isLoading,
+                              child: widget.loadingIndicator,
+                            );
+                          } else {
+                            if (widget.length > 0) {
+                              return widget.builder(index);
                             } else {
-                              if (widget.length > 0) {
-                                return widget.builder(index);
-                              } else {
-                                return widget.loadingIndicator;
-                              }
+                              return widget.loadingIndicator;
                             }
-                          },
-                        ),
-                      );
-                    });
+                          }
+                        },
+                      ),
+                    );
                   },
                 ),
               ),
