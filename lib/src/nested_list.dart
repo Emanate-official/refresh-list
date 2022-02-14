@@ -1,10 +1,11 @@
-library refresh_list;
-
 import 'package:flutter/material.dart';
 
-class SliverLoadingList extends StatefulWidget {
-  const SliverLoadingList({
+import 'defs.dart';
+
+class NestedLoadingList extends StatefulWidget {
+  const NestedLoadingList({
     required this.builder,
+    required this.controller,
     required this.length,
     required this.loadingIndicator,
     required this.onLoad,
@@ -17,6 +18,7 @@ class SliverLoadingList extends StatefulWidget {
   }) : super(key: key);
 
   final Widget Function(int) builder;
+  final ScrollController controller;
   final int length;
   final SizedBox loadingIndicator;
   final double loadingIndicatorOffset;
@@ -27,10 +29,10 @@ class SliverLoadingList extends StatefulWidget {
   final List<Widget> sliverBars;
 
   @override
-  _SliverLoadingListState createState() => _SliverLoadingListState();
+  _NestedLoadingListState createState() => _NestedLoadingListState();
 }
 
-class _SliverLoadingListState extends State<SliverLoadingList> {
+class _NestedLoadingListState extends State<NestedLoadingList> {
   ScrollController? innerScrollController;
 
   bool isLoading = false;
@@ -88,6 +90,7 @@ class _SliverLoadingListState extends State<SliverLoadingList> {
           child: Stack(
             children: <Widget>[
               NestedScrollView(
+                controller: widget.controller,
                 headerSliverBuilder: (
                   BuildContext context,
                   bool innerBoxIsScrolled,
@@ -161,5 +164,3 @@ int _calculateSkeletonCount(
 ) {
   return (constraints.maxHeight ~/ indicatorHeight) + 1;
 }
-
-typedef FutureFunction = Future<void> Function();

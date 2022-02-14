@@ -1,6 +1,6 @@
-library refresh_list;
-
 import 'package:flutter/material.dart';
+
+import 'defs.dart';
 
 class RefreshList extends StatefulWidget {
   const RefreshList({
@@ -139,5 +139,3 @@ class _RefreshListState extends State<RefreshList> {
     );
   }
 }
-
-typedef FutureFunction = Future<void> Function();
