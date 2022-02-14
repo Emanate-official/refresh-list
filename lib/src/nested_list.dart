@@ -5,7 +5,6 @@ import 'defs.dart';
 class NestedLoadingList extends StatefulWidget {
   const NestedLoadingList({
     required this.builder,
-    required this.controller,
     required this.length,
     required this.loadingIndicator,
     required this.onLoad,
@@ -18,7 +17,6 @@ class NestedLoadingList extends StatefulWidget {
   }) : super(key: key);
 
   final Widget Function(int) builder;
-  final ScrollController controller;
   final int length;
   final SizedBox loadingIndicator;
   final double loadingIndicatorOffset;
@@ -90,7 +88,6 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
           child: Stack(
             children: <Widget>[
               NestedScrollView(
-                controller: widget.controller,
                 headerSliverBuilder: (
                   BuildContext context,
                   bool innerBoxIsScrolled,
