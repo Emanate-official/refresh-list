@@ -69,10 +69,10 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
 
   @override
   void dispose() {
+    super.dispose();
+
     innerScrollController!.removeListener(innerScrollHandler);
     innerScrollController!.dispose();
-
-    super.dispose();
   }
 
   @override
@@ -98,8 +98,11 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
                 },
                 body: Builder(
                   builder: (BuildContext context) {
-                    innerScrollController = PrimaryScrollController.of(context);
-                    innerScrollController!.addListener(innerScrollHandler);
+                    if (innerScrollController == null) {
+                      innerScrollController =
+                          PrimaryScrollController.of(context);
+                      innerScrollController!.addListener(innerScrollHandler);
+                    }
 
                     final int loadingCount = _calculateSkeletonCount(
                       constraints,
@@ -118,14 +121,11 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
                             : const NeverScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(0),
                         itemCount: widget.length > 0
-                            ? widget.length + 1
+                            ? widget.length + (isLoading ? 1 : 0)
                             : loadingCount,
                         itemBuilder: (BuildContext context, int index) {
-                          if (index == widget.length) {
-                            return Visibility(
-                              visible: isLoading,
-                              child: widget.loadingIndicator,
-                            );
+                          if (index == widget.length && isLoading) {
+                            return widget.loadingIndicator;
                           } else {
                             if (widget.length > 0) {
                               return widget.builder(index);
