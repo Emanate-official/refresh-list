@@ -10,6 +10,7 @@ class RefreshList extends StatefulWidget {
     required this.onLoad,
     required this.onRefresh,
     Key? key,
+    this.bottomIndicatorOffset = 0,
     this.refreshColor = Colors.white,
     this.refreshBackground = Colors.black87,
     this.physics = const BouncingScrollPhysics(),
@@ -20,6 +21,7 @@ class RefreshList extends StatefulWidget {
   final SizedBox loadingIndicator;
   final FutureFunction onLoad;
   final FutureFunction onRefresh;
+  final double bottomIndicatorOffset;
   final Color refreshColor;
   final Color refreshBackground;
   final ScrollPhysics physics;
@@ -100,9 +102,13 @@ class _RefreshListState extends State<RefreshList> {
                       padding: EdgeInsets.zero,
                       controller: _controller,
                       physics: widget.physics,
-                      itemCount: widget.length + 1,
+                      itemCount: widget.length + 2,
                       itemBuilder: (BuildContext context, int index) {
-                        if (index == widget.length) {
+                        if (index > widget.length) {
+                          return SizedBox(
+                            height: widget.bottomIndicatorOffset,
+                          );
+                        } else if (index == widget.length) {
                           return Visibility(
                             visible: isLoading,
                             child: widget.loadingIndicator,
@@ -116,10 +122,23 @@ class _RefreshListState extends State<RefreshList> {
                 ),
                 if (!isLoading && position < widget.loadingIndicator.height!)
                   Container(
-                    alignment: Alignment.bottomCenter,
-                    margin: const EdgeInsets.only(right: 15),
-                    child: widget.loadingIndicator,
-                    transform: Matrix4.translationValues(0, position, 0),
+                    decoration: const BoxDecoration(
+                      color: Colors.transparent,
+                    ),
+                    clipBehavior: Clip.antiAlias,
+                    margin: EdgeInsets.only(
+                      bottom: widget.bottomIndicatorOffset,
+                    ),
+                    child: Stack(
+                      children: [
+                        Container(
+                          alignment: Alignment.bottomCenter,
+                          margin: const EdgeInsets.only(right: 15),
+                          child: widget.loadingIndicator,
+                          transform: Matrix4.translationValues(0, position, 0),
+                        ),
+                      ],
+                    ),
                   ),
               ],
             ),

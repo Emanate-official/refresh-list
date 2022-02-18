@@ -10,6 +10,7 @@ class NestedLoadingList extends StatefulWidget {
     required this.onLoad,
     required this.onRefresh,
     Key? key,
+    this.bottomIndicatorOffset = 0,
     this.loadingIndicatorOffset = 0,
     this.refreshColor = Colors.white,
     this.refreshBackground = Colors.black87,
@@ -19,6 +20,7 @@ class NestedLoadingList extends StatefulWidget {
   final Widget Function(int) builder;
   final int length;
   final SizedBox loadingIndicator;
+  final double bottomIndicatorOffset;
   final double loadingIndicatorOffset;
   final FutureFunction onLoad;
   final FutureFunction onRefresh;
@@ -121,17 +123,24 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
                             : const NeverScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(0),
                         itemCount: widget.length > 0
-                            ? widget.length + (isLoading ? 1 : 0)
+                            ? widget.length + 2
                             : loadingCount,
                         itemBuilder: (BuildContext context, int index) {
-                          if (index == widget.length && isLoading) {
-                            return widget.loadingIndicator;
-                          } else {
-                            if (widget.length > 0) {
-                              return widget.builder(index);
+                          if (widget.length > 0) {
+                            if (index > widget.length) {
+                              return SizedBox(
+                                height: widget.bottomIndicatorOffset,
+                              );
+                            } else if (index == widget.length) {
+                              return Visibility(
+                                visible: isLoading,
+                                child: widget.loadingIndicator,
+                              );
                             } else {
-                              return widget.loadingIndicator;
+                              return widget.builder(index);
                             }
+                          } else {
+                            return widget.loadingIndicator;
                           }
                         },
                       ),
@@ -141,9 +150,23 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
               ),
               if (!isLoading && position < widget.loadingIndicator.height!)
                 Container(
-                  alignment: Alignment.bottomCenter,
-                  child: widget.loadingIndicator,
-                  transform: Matrix4.translationValues(0, position, 0),
+                  decoration: const BoxDecoration(
+                    color: Colors.transparent,
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  margin: EdgeInsets.only(
+                    bottom: widget.bottomIndicatorOffset,
+                  ),
+                  child: Stack(
+                    children: [
+                      Container(
+                        alignment: Alignment.bottomCenter,
+                        margin: const EdgeInsets.only(right: 15),
+                        child: widget.loadingIndicator,
+                        transform: Matrix4.translationValues(0, position, 0),
+                      ),
+                    ],
+                  ),
                 ),
             ],
           ),
