@@ -17,7 +17,7 @@ class NestedLoadingList extends StatefulWidget {
     this.sliverBars = const <Widget>[],
   }) : super(key: key);
 
-  final Widget Function(int) builder;
+  final Widget Function(BuildContext, int) builder;
   final int length;
   final SizedBox loadingIndicator;
   final double bottomIndicatorOffset;
@@ -137,7 +137,7 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
                                 child: widget.loadingIndicator,
                               );
                             } else {
-                              return widget.builder(index);
+                              return widget.builder(context, index);
                             }
                           } else {
                             return widget.loadingIndicator;

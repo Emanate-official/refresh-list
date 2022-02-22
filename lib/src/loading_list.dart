@@ -16,7 +16,7 @@ class RefreshList extends StatefulWidget {
     this.physics = const BouncingScrollPhysics(),
   }) : super(key: key);
 
-  final Widget Function(int) builder;
+  final Widget Function(BuildContext, int) builder;
   final int length;
   final SizedBox loadingIndicator;
   final FutureFunction onLoad;
@@ -114,7 +114,7 @@ class _RefreshListState extends State<RefreshList> {
                             child: widget.loadingIndicator,
                           );
                         } else {
-                          return widget.builder(index);
+                          return widget.builder(context, index);
                         }
                       },
                     ),
