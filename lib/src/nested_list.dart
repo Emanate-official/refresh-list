@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'defs.dart';
+import 'package:refresh_list/src/components/index.dart';
+import 'package:refresh_list/src/utilities/index.dart';
 
 class NestedLoadingList extends StatefulWidget {
   const NestedLoadingList({
@@ -33,7 +34,7 @@ class NestedLoadingList extends StatefulWidget {
 }
 
 class _NestedLoadingListState extends State<NestedLoadingList> {
-  ScrollController? innerScrollController;
+  ScrollController? controller;
 
   bool isLoading = false;
   double position = 0;
@@ -45,9 +46,8 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
   }
 
   void innerScrollHandler() {
-    if (innerScrollController?.hasClients ?? false) {
-      double diff = innerScrollController!.offset -
-          innerScrollController!.position.maxScrollExtent;
+    if (controller?.hasClients ?? false) {
+      double diff = controller!.offset - controller!.position.maxScrollExtent;
 
       if (diff > 0 && !isLoading) {
         setState(() => position = widget.loadingIndicator.height! - diff);
@@ -73,8 +73,8 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
   void dispose() {
     super.dispose();
 
-    innerScrollController!.removeListener(innerScrollHandler);
-    innerScrollController!.dispose();
+    controller!.removeListener(innerScrollHandler);
+    controller!.dispose();
   }
 
   @override
@@ -100,13 +100,12 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
                 },
                 body: Builder(
                   builder: (BuildContext context) {
-                    if (innerScrollController == null) {
-                      innerScrollController =
-                          PrimaryScrollController.of(context);
-                      innerScrollController!.addListener(innerScrollHandler);
+                    if (controller == null) {
+                      controller = PrimaryScrollController.of(context);
+                      controller!.addListener(innerScrollHandler);
                     }
 
-                    final int loadingCount = _calculateSkeletonCount(
+                    final int loadingCount = Calculate.skeletonCount(
                       constraints,
                       widget.loadingIndicator.height ?? 0,
                     );
@@ -149,24 +148,10 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
                 ),
               ),
               if (!isLoading && position < widget.loadingIndicator.height!)
-                Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.transparent,
-                  ),
-                  clipBehavior: Clip.antiAlias,
-                  margin: EdgeInsets.only(
-                    bottom: widget.bottomIndicatorOffset,
-                  ),
-                  child: Stack(
-                    children: [
-                      Container(
-                        alignment: Alignment.bottomCenter,
-                        margin: const EdgeInsets.only(right: 15),
-                        child: widget.loadingIndicator,
-                        transform: Matrix4.translationValues(0, position, 0),
-                      ),
-                    ],
-                  ),
+                BottomIndicator(
+                  bottomIndicatorOffset: widget.bottomIndicatorOffset,
+                  loadingIndicator: widget.loadingIndicator,
+                  position: position,
                 ),
             ],
           ),
@@ -174,11 +159,4 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
       },
     );
   }
-}
-
-int _calculateSkeletonCount(
-  BoxConstraints constraints,
-  double indicatorHeight,
-) {
-  return (constraints.maxHeight ~/ indicatorHeight) + 1;
 }
