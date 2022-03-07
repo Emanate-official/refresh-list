@@ -11,8 +11,8 @@ class CustomLoadingList extends StatefulWidget {
     required this.onLoad,
     required this.onRefresh,
     Key? key,
-    this.controller,
     this.bottomIndicatorOffset = 0,
+    this.controller,
     this.displayBuilderContent = true,
     this.loadingIndicatorOffset = 0,
     this.refreshColor = Colors.white,
@@ -104,7 +104,9 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
                 onRefresh: widget.onRefresh,
                 child: CustomScrollView(
                   physics: widget.length > 0
-                      ? const BouncingScrollPhysics()
+                      ? (widget.displayBuilderContent
+                          ? const BouncingScrollPhysics()
+                          : const ClampingScrollPhysics())
                       : const NeverScrollableScrollPhysics(),
                   controller: controller,
                   slivers: [
@@ -134,9 +136,10 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
                         child: widget.loadingIndicator,
                       ),
                     // Padding for bottom indicator offset
-                    SliverToBoxAdapter(
-                      child: SizedBox(height: widget.bottomIndicatorOffset),
-                    ),
+                    if (widget.displayBuilderContent)
+                      SliverToBoxAdapter(
+                        child: SizedBox(height: widget.bottomIndicatorOffset),
+                      ),
                   ],
                 ),
               ),
