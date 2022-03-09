@@ -70,14 +70,6 @@ class _RefreshListState extends State<RefreshList> {
   }
 
   @override
-  void dispose() {
-    controller.removeListener(scrollHandler);
-    controller.dispose();
-
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {

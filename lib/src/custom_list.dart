@@ -78,14 +78,6 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-
-    controller.removeListener(scrollHandler);
-    controller.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
