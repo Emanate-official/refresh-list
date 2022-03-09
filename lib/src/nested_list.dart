@@ -70,14 +70,6 @@ class _NestedLoadingListState extends State<NestedLoadingList> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-
-    controller!.removeListener(innerScrollHandler);
-    controller!.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
