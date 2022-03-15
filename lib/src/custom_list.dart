@@ -90,7 +90,9 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
           child: Stack(
             children: <Widget>[
               RefreshIndicator(
-                edgeOffset: widget.loadingIndicatorOffset,
+                edgeOffset: widget.displayBuilderContent
+                    ? widget.loadingIndicatorOffset
+                    : -10000,
                 // Disable refresh handling if builder content is disabled
                 color: widget.displayBuilderContent
                     ? widget.refreshColor
