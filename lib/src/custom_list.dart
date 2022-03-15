@@ -91,9 +91,16 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
             children: <Widget>[
               RefreshIndicator(
                 edgeOffset: widget.loadingIndicatorOffset,
-                color: widget.refreshColor,
-                backgroundColor: widget.refreshBackground,
-                onRefresh: widget.onRefresh,
+                // Disable refresh handling if builder content is disabled
+                color: widget.displayBuilderContent
+                    ? widget.refreshColor
+                    : Colors.transparent,
+                backgroundColor: widget.displayBuilderContent
+                    ? widget.refreshBackground
+                    : Colors.transparent,
+                onRefresh: widget.displayBuilderContent
+                    ? widget.onRefresh
+                    : () async {},
                 child: CustomScrollView(
                   physics: widget.length > 0
                       ? (widget.displayBuilderContent
@@ -135,7 +142,9 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
                   ],
                 ),
               ),
-              if (!isLoading && position < widget.loadingIndicator.height!)
+              if (!isLoading &&
+                  position < widget.loadingIndicator.height! &&
+                  widget.displayBuilderContent)
                 BottomIndicator(
                   bottomIndicatorOffset: widget.bottomIndicatorOffset,
                   loadingIndicator: widget.loadingIndicator,
