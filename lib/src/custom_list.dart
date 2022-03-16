@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:refresh_list/src/components/index.dart';
 
+import 'package:refresh_list/src/components/index.dart';
 import 'package:refresh_list/src/utilities/index.dart';
 
 class CustomLoadingList extends StatefulWidget {
@@ -54,7 +54,7 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
   }
 
   void scrollHandler() {
-    if (controller.hasClients) {
+    if (controller.hasClients && mounted) {
       double diff = controller.offset - controller.position.maxScrollExtent;
 
       if (diff > 0 && !isLoading) {
@@ -66,15 +66,17 @@ class _CustomLoadingListState extends State<CustomLoadingList> {
   }
 
   Future<void> load() async {
-    setState(() => isLoading = true);
+    if (mounted) {
+      setState(() => isLoading = true);
 
-    await Future<dynamic>.delayed(const Duration(seconds: 1));
-    await widget.onLoad();
+      await Future<dynamic>.delayed(const Duration(seconds: 1));
+      await widget.onLoad();
 
-    setState(() {
-      position = widget.loadingIndicator.height!;
-      isLoading = false;
-    });
+      setState(() {
+        position = widget.loadingIndicator.height!;
+        isLoading = false;
+      });
+    }
   }
 
   @override
